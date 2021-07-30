@@ -45,7 +45,7 @@ void * Comm(void *ClientDet){
     printf("Thread ID %ld\n",pthread_self());
     printf("    Client %d is connected\n",clientDetail->id);
     
-    char options[]="\n   CHAT SERVERv1.2\nyou have options:\n LIST: lists active clients\n SEND: to send msg to any client\n QUIT: to close connection\n SELF: self id\n\n";
+    char options[]="\n   CHAT SERVERv1.2\nyou have options:\n LIST: lists active clients\n SEND: to send msg to any client\n QUIT: to close connection\n SELF: self id\n PLAY: play tictactoe\n\n";
     
     int w = write(clientsocket,options,strlen(options));
 
@@ -57,10 +57,9 @@ void * Comm(void *ClientDet){
         int r = read(clientsocket,databuffer,20);
         if(r<0)
             perror("option read failed");
-        if(strncmp("LIST",databuffer,4)==0){
-            //********************************LIST FEATURE***********************************
+        if(strncmp("LIST",databuffer,4)==0){                        //LIST
             write(clientsocket,"Listing Client Avaiable\n",1024);
-            char buffer[1024];
+            char buffer[50];
             for(int j=0;j<active;j++){
                 if(Client[j].sockid == -1)
                     continue;
@@ -73,9 +72,8 @@ void * Comm(void *ClientDet){
             if(active-1 == disconnt){
                 write(clientsocket,"No other Client available\n",1024);
             }
-        }   //********************************ENDS HERE***********************************************
-        else if(strncmp("SEND",databuffer,4)==0){
-            //*********************************SEND FEATURE******************************************
+        }
+        else if(strncmp("SEND",databuffer,4)==0){                   //SEND
             // insert msg function
             char dbuffer[255];
             int i=0;
@@ -120,37 +118,29 @@ void * Comm(void *ClientDet){
             else{
                 perror("no Client of that id present !!");
             }
-        }   //*********************************ENDS HERE**********************************************
-        else if(strncmp("SELF",databuffer,4)==0){
-            //*********************************SELF FEATURE******************************************
+        }
+        else if(strncmp("SELF",databuffer,4)==0){                       //SELF
             char buffer[100];
             snprintf (buffer, sizeof(buffer), " ID - %d\n",clientDetail->id);
             write(clientsocket,buffer,strlen(buffer));
             buffer[0]='\0';
-            
-        }   //*********************************ENDS HERE**********************************************
-        else if(strncmp("QUIT",databuffer,4)==0){
-            //********************************QUIT FEATURE*******************************************
+        }
+        else if(strncmp("QUIT",databuffer,4)==0){                       //QUIT
             write(clientsocket,"QUIT",1024);
             clientDetail->sockid = -1;
             disconnt++;
             printf("\nAvailable clients %d\n",active-disconnt);
             break;
-            //*********************************ENDS HERE**********************************************
         }
-        else if(strncmp("YES",databuffer,3)==0){
-            //********************************YES*****************************************************
+        else if(strncmp("YES",databuffer,3)==0){                        //YES
             printf("YES Mode On *add evil smile*\n");
             write(clientDetail->connect,"Connected..\n",strlen("Connected..\n"));
             char buffer[1024];
             while(Client[clientDetail->id].connect!=0){
                 buffer[0]='\0';
                 r = read(clientsocket,buffer,1024);
-
                 if(strlen(buffer)!=0)
                     write(clientDetail->connect,buffer,1024);
-                
-
                 if(strncmp("bye",buffer,3)==0){
                     printf("connection closed\n");
                     write(clientsocket,"*Connection closed now*\n",strlen("*Connection closed now*\n"));
@@ -159,16 +149,15 @@ void * Comm(void *ClientDet){
                     break;
                 }
             }
-        }   //*****************************ENDS HERE**************************************************
-        else if(strncmp("NO",databuffer,2)==0){
-            //********************************YES*****************************************************
+        }
+        else if(strncmp("NO",databuffer,2)==0){                         //NO
             printf("NO Mode\n");
             write(clientDetail->connect,"Connection refused..\n",strlen("Connection refused.."));
             write(clientsocket,"*Connection closed now*\n",strlen("*Connection closed now*\n"));
             write(clientDetail->connect,"*Connection closed now*\n",strlen("*Connection closed now*\n"));    
             printf("connection closed\n");
             Client[clientDetail->id].connect = 0;
-        }   //*****************************ENDS HERE**************************************************
+        }
         else if(strncmp("PLAY",databuffer,4)==0){
             // insert msg function
             char dbuffer[255];
@@ -221,16 +210,16 @@ void * Comm(void *ClientDet){
             }
 
 
-        }
+        }/*
         else if(strncmp("GO",databuffer,3)==0){
             //********************************YES*****************************************************
             printf("GO Mode On *add evil smile*\n");
             write(clientDetail->connect,"Connected..\n",strlen("Connected..\n"));
             //need edit
-            }
+            }*/
         else if(strncmp("help",databuffer,4)==0){
             memset(options, '\0', sizeof(options));
-            strcat(options," \n you have options:\n LIST: lists active clients\n SEND: to send msg to any client\n QUIT: to close connection\n SELF: self id\n\n");
+            strcat(options," \n you have options:\n LIST: lists active clients\n SEND: to send msg to any client\n QUIT: to close connection\n SELF: self id\nPLAY: play tictactoe\n\n");
             write(clientsocket,options,strlen(options));
         }
         databuffer[0]='\0';
@@ -256,7 +245,7 @@ int main(int argc,char *argv[]){
         return -1;
     
     printf(" Server Started on port 9800..\n");
-    
+    printf(" Current Client limit set %d\n",CLIENT_LIMIT);
     
     
     for(int i=0;i<CLIENT_LIMIT && flag==0;i++){    
