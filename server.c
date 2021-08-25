@@ -8,7 +8,7 @@
 #include<netinet/in.h>
 #include "game.h"
 
-const int CLIENT_LIMIT=3;       // check below CLient and thread limit;
+#define CLIENT_LIMIT 3       // check below CLient and thread limit;
 int active = 0;
 int disconnt = 0;
 int flag = 0;
@@ -20,8 +20,8 @@ struct client{
     int len;
     int connect;
 };
-struct client Client[3];        //change here to increase limit
-pthread_t thread[3];            //change here to increase limit
+struct client Client[CLIENT_LIMIT];     // array of client
+pthread_t thread[CLIENT_LIMIT];    
 
 
 
@@ -98,7 +98,9 @@ void * Comm(void *ClientDet){
                     write(Client[i].sockid,"Someone wants to connect! type YES/NO:\n",strlen("Someone wants to connect! type YES/NO:\n"));
                     Client[i].connect = clientsocket;
 
-                    while(Client[i].connect){
+
+                    //update needed here
+                    while(Client[i].connect!=0){
                         dbuffer[0] = '\0';
                         r = read(clientsocket,dbuffer,1024);
 
@@ -133,7 +135,7 @@ void * Comm(void *ClientDet){
             break;
         }
         else if(strncmp("YES",databuffer,3)==0){                        //YES
-            printf("YES Mode On *add evil smile*\n");
+            printf("YES Mode On\n");
             write(clientDetail->connect,"Connected..\n",strlen("Connected..\n"));
             char buffer[1024];
             while(Client[clientDetail->id].connect!=0){
@@ -224,7 +226,6 @@ void * Comm(void *ClientDet){
         }
         databuffer[0]='\0';
     }
-    return NULL;
 }
 
 int main(int argc,char *argv[]){
